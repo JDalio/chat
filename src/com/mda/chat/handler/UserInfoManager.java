@@ -1,9 +1,9 @@
-package com.wolfbe.chat.handler;
+package com.mda.chat.handler;
 
-import com.wolfbe.chat.entity.UserInfo;
-import com.wolfbe.chat.proto.ChatProto;
-import com.wolfbe.chat.util.BlankUtil;
-import com.wolfbe.chat.util.NettyUtil;
+import com.mda.chat.entity.UserInfo;
+import com.mda.chat.proto.Message;
+import com.mda.chat.utils.BlankUtil;
+import com.mda.chat.utils.NettyUtil;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.slf4j.Logger;
@@ -72,7 +72,7 @@ public class UserInfoManager
     {
         try
         {
-            logger.warn("channel will be remove, address is :{}", NettyUtil.parseChannelRemoteAddr(channel));
+            logger.warn("Timeout: User Channel Will Be Remove, Address :{}", NettyUtil.parseChannelRemoteAddr(channel));
             rwLock.writeLock().lock();
             channel.close();
             UserInfo userInfo = userInfos.get(channel);
@@ -110,7 +110,7 @@ public class UserInfoManager
                 {
                     UserInfo userInfo = userInfos.get(ch);
                     if (userInfo == null || !userInfo.isAuth()) continue;
-                    ch.writeAndFlush(new TextWebSocketFrame(ChatProto.buildMessProto(uid, nick, message)));
+                    ch.writeAndFlush(new TextWebSocketFrame(Message.buildMessProto(uid, nick, message)));
                 }
             }
             finally
@@ -132,8 +132,9 @@ public class UserInfoManager
             for (Channel ch : keySet)
             {
                 UserInfo userInfo = userInfos.get(ch);
-                if (userInfo == null || !userInfo.isAuth()) continue;
-                ch.writeAndFlush(new TextWebSocketFrame(ChatProto.buildSystProto(code, mess)));
+                if (userInfo == null || !userInfo.isAuth())
+                    continue;
+                ch.writeAndFlush(new TextWebSocketFrame(Message.buildSystProto(code, mess)));
             }
         }
         finally
@@ -153,7 +154,7 @@ public class UserInfoManager
             {
                 UserInfo userInfo = userInfos.get(ch);
                 if (userInfo == null || !userInfo.isAuth()) continue;
-                ch.writeAndFlush(new TextWebSocketFrame(ChatProto.buildPingProto()));
+                ch.writeAndFlush(new TextWebSocketFrame(Message.buildPingProto()));
             }
         }
         finally
@@ -167,12 +168,12 @@ public class UserInfoManager
      */
     public static void sendInfo(Channel channel, int code, Object mess)
     {
-        channel.writeAndFlush(new TextWebSocketFrame(ChatProto.buildSystProto(code, mess)));
+        channel.writeAndFlush(new TextWebSocketFrame(Message.buildSystProto(code, mess)));
     }
 
     public static void sendPong(Channel channel)
     {
-        channel.writeAndFlush(new TextWebSocketFrame(ChatProto.buildPongProto()));
+        channel.writeAndFlush(new TextWebSocketFrame(Message.buildPongProto()));
     }
 
     /**

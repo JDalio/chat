@@ -1,8 +1,8 @@
-package com.wolfbe.chat.handler;
+package com.mda.chat.handler;
 
 import com.alibaba.fastjson.JSONObject;
-import com.wolfbe.chat.entity.UserInfo;
-import com.wolfbe.chat.proto.ChatCode;
+import com.mda.chat.entity.UserInfo;
+import com.mda.chat.proto.ChatCode;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
@@ -17,6 +17,9 @@ public class MessageHandler extends SimpleChannelInboundHandler<TextWebSocketFra
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame frame)
             throws Exception
     {
+        System.out.println("$$$$$$Message Handler Receive Ref:"+frame.refCnt());
+        Thread.sleep(10000);
+        System.out.println("$$$$$After Sleep");
         UserInfo userInfo = UserInfoManager.getUserInfo(ctx.channel());
         if (userInfo != null && userInfo.isAuth())
         {
@@ -24,6 +27,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<TextWebSocketFra
             // 广播返回用户发送的消息文本
             UserInfoManager.broadcastMess(userInfo.getUserId(), userInfo.getNick(), json.getString("mess"));
         }
+        System.out.println("$$$$$$Message Handler Finish");
     }
 
     @Override

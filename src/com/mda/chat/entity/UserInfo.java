@@ -1,4 +1,4 @@
-package com.wolfbe.chat.entity;
+package com.mda.chat.entity;
 
 import io.netty.channel.Channel;
 

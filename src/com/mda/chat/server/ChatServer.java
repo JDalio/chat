@@ -1,8 +1,8 @@
-package com.wolfbe.chat.server;
+package com.mda.chat.server;
 
-import com.wolfbe.chat.handler.MessageHandler;
-import com.wolfbe.chat.handler.UserAuthHandler;
-import com.wolfbe.chat.handler.UserInfoManager;
+import com.mda.chat.handler.MessageHandler;
+import com.mda.chat.handler.UserAuthHandler;
+import com.mda.chat.handler.UserInfoManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;

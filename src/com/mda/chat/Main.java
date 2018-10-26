@@ -1,7 +1,7 @@
-package com.wolfbe.chat;
+package com.mda.chat;
 
-import com.wolfbe.chat.server.ChatServer;
-import com.wolfbe.chat.server.Server;
+import com.mda.chat.server.ChatServer;
+import com.mda.chat.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +11,7 @@ public class Main
 
     public static void main(String[] args)
     {
-        int port=Server.DEFAULT_PORT;
+        int port= Server.DEFAULT_PORT;
         if (args.length > 0)
         {
             try

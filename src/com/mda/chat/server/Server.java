@@ -1,4 +1,4 @@
-package com.wolfbe.chat.server;
+package com.mda.chat.server;
 
 public interface Server
 {

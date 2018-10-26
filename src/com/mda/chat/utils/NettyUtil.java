@@ -1,4 +1,4 @@
-package com.wolfbe.chat.util;
+package com.mda.chat.utils;
 
 import io.netty.channel.Channel;
 

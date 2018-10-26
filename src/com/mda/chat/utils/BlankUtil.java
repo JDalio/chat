@@ -1,4 +1,4 @@
-package com.wolfbe.chat.util;
+package com.mda.chat.utils;
 
 import java.io.Serializable;
 import java.util.Collection;
