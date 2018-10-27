@@ -31,17 +31,17 @@ public class Message
 
     public static String buildPingProto()
     {
-        return buildProto(MessageType.PING.getValue(), null);
+        return buildProto(MessageType.PING, null);
     }
 
     public static String buildPongProto()
     {
-        return buildProto(MessageType.PONG.getValue(), null);
+        return buildProto(MessageType.PONG, null);
     }
 
     public static String buildSystProto(int code, Object mess)
     {
-        Message msg = new Message(MessageType.SYST.getValue(), null);
+        Message msg = new Message(MessageType.SYST, null);
         msg.extend.put("code", code);
         msg.extend.put("mess", mess);
         return JSONObject.toJSONString(msg);
@@ -49,14 +49,14 @@ public class Message
 
     public static String buildAuthProto(boolean isSuccess)
     {
-        Message msg = new Message(MessageType.AUTH.getValue(), null);
+        Message msg = new Message(MessageType.AUTH, null);
         msg.extend.put("isSuccess", isSuccess);
         return JSONObject.toJSONString(msg);
     }
 
     public static String buildErorProto(int code, String mess)
     {
-        Message msg = new Message(MessageType.EROR.getValue(), null);
+        Message msg = new Message(MessageType.EROR, null);
         msg.extend.put("code", code);
         msg.extend.put("mess", mess);
         return JSONObject.toJSONString(msg);
@@ -64,7 +64,7 @@ public class Message
 
     public static String buildMessProto(int uid, String nick, String mess)
     {
-        Message msg = new Message(MessageType.MESS.getValue(), mess);
+        Message msg = new Message(MessageType.MESS, mess);
         msg.extend.put("uid", uid);
         msg.extend.put("nick", nick);
         msg.extend.put("time", DateTimeUtil.getCurrentTime());

@@ -1,7 +1,7 @@
 package com.mda.chat.server;
 
 import com.mda.chat.handler.MessageHandler;
-import com.mda.chat.handler.UserAuthHandler;
+import com.mda.chat.handler.AuthHandler;
 import com.mda.chat.handler.UserInfoManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -81,7 +81,6 @@ public class ChatServer implements Server
         b = new ServerBootstrap();
         b.group(bossGroup, workGroup)
                 .channel(NioServerSocketChannel.class)
-                .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.SO_BACKLOG, 1024)
                 .localAddress(new InetSocketAddress(port))
@@ -96,7 +95,7 @@ public class ChatServer implements Server
                                 new HttpObjectAggregator(65536),//将多个消息转换成单一的消息对象
                                 new ChunkedWriteHandler(),  //支持异步发送大的码流，一般用于发送文件流
                                 new IdleStateHandler(60, 0, 0), //检测链路是否读空闲
-                                new UserAuthHandler(), //处理握手和认证
+                                new AuthHandler(), //处理握手和认证
                                 new MessageHandler()    //处理消息的发送
                         );
                     }

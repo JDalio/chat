@@ -1,8 +1,6 @@
 package com.mda.chat.handler;
 
 import com.alibaba.fastjson.JSONObject;
-import com.mda.chat.proto.ChatCode;
-import com.mda.chat.proto.Message;
 import com.mda.chat.proto.MessageType;
 import com.mda.chat.server.Server;
 import com.mda.chat.utils.NettyUtil;
@@ -13,13 +11,12 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UserAuthHandler extends SimpleChannelInboundHandler<Object>
+public class AuthHandler extends SimpleChannelInboundHandler<Object>
 {
-    private static final Logger logger = LoggerFactory.getLogger(UserAuthHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(AuthHandler.class);
 
     private WebSocketServerHandshaker handshaker;
 
@@ -47,7 +44,7 @@ public class UserAuthHandler extends SimpleChannelInboundHandler<Object>
                 final String remoteAddress = NettyUtil.parseChannelRemoteAddr(ctx.channel());
                 logger.warn("ChannelRead Timeout, IDLE exception: [{}]", remoteAddress);
                 UserInfoManager.removeChannel(ctx.channel());
-                UserInfoManager.broadCastInfo(ChatCode.SYS_USER_COUNT, UserInfoManager.getAuthUserCount());
+                UserInfoManager.broadCastInfo(MessageType.SYS_USER_COUNT, UserInfoManager.getAuthUserCount());
             }
         }
         ctx.fireUserEventTriggered(evt);
@@ -55,6 +52,8 @@ public class UserAuthHandler extends SimpleChannelInboundHandler<Object>
 
     private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest request)
     {
+        System.out.println("http request");
+
         if (!request.decoderResult().isSuccess() || !"websocket".equals(request.headers().get("Upgrade")))
         {
             logger.warn("Protocol don't support WebSocket");
@@ -79,49 +78,13 @@ public class UserAuthHandler extends SimpleChannelInboundHandler<Object>
 
     private void handleWebSocket(ChannelHandlerContext ctx, WebSocketFrame frame)
     {
-        System.out.println("*****WebSocket Frame*****"+frame);
         // 判断是否关闭链路命令
         if (frame instanceof CloseWebSocketFrame)
         {
-            logger.info("*********WebSocket Close**********");
             handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
             UserInfoManager.removeChannel(ctx.channel());
             return;
         }
-        // 判断是否Ping消息
-        if (frame instanceof PingWebSocketFrame)
-        {
-            logger.info("*********WebSocket Ping**********");
-
-            logger.info("*****Ping Message init ref: "+frame.refCnt());
-
-            logger.info("ping message:{}", frame.content().retain());
-
-            logger.info("*****Ping Message after logger ref: "+frame.refCnt());
-
-            ctx.writeAndFlush(new PongWebSocketFrame(frame.content().retain()));
-
-            logger.info("*****Pong Message after write and flush ref: "+frame.refCnt());
-
-            return;
-        }
-        // 判断是否Pong消息
-        if (frame instanceof PongWebSocketFrame)
-        {
-            logger.info("*********WebSocket Pong**********");
-            logger.info("*****Pong Message init ref: "+frame.refCnt());
-
-            logger.info("pong message:{}", frame.content().retain());
-
-            logger.info("*****Pong Message after logger ref: "+frame.refCnt());
-
-            ctx.writeAndFlush(new PongWebSocketFrame(frame.content().retain()));
-
-            logger.info("*****Pong Message after write and flush ref: "+frame.refCnt());
-
-            return;
-        }
-
         // 本程序目前只支持文本消息
         if (!(frame instanceof TextWebSocketFrame))
         {
@@ -130,36 +93,27 @@ public class UserAuthHandler extends SimpleChannelInboundHandler<Object>
 
         String message = ((TextWebSocketFrame) frame).text();
         JSONObject json = JSONObject.parseObject(message);
-        MessageType type = MessageType.valueOf(json.getInteger("code"));
+        int type = json.getInteger("code");
         Channel channel = ctx.channel();
         switch (type)
         {
-            case PING:
+            case MessageType.PONG:
                 UserInfoManager.updateUserTime(channel);
-                UserInfoManager.sendPong(ctx.channel());
-                return;
-            case PONG:
-                UserInfoManager.updateUserTime(channel);
-                return;
-            case AUTH:
+                break;
+            case MessageType.AUTH:
                 boolean isSuccess = UserInfoManager.saveUser(channel, json.getString("nick"));
-                UserInfoManager.sendInfo(channel, ChatCode.SYS_AUTH_STATE, isSuccess);
+                UserInfoManager.sendInfo(channel, MessageType.SYS_AUTH_STATE, isSuccess);
                 if (isSuccess)
                 {
-                    UserInfoManager.broadCastInfo(ChatCode.SYS_USER_COUNT, UserInfoManager.getAuthUserCount());
+                    UserInfoManager.broadCastInfo(MessageType.SYS_USER_COUNT, UserInfoManager.getAuthUserCount());
                 }
-                return;
-            case MESS: //普通的消息留给MessageHandler处理
-                System.out.println("******Before:"+frame.refCnt());
-                frame.retain();
-                logger.info("*****Receive text message{}", frame.content());
-                System.out.println("******After log:"+frame.refCnt());
+                break;
+            case MessageType.MESS: //普通的消息留给MessageHandler处理
+                ctx.fireChannelRead(frame.retain());
                 break;
             default:
-                logger.warn("The code [{}] can't be auth!!!", code);
-                return;
+                logger.warn("The code [{}] can't be auth!!!", type);
         }
-        //后续消息交给MessageHandler处理
-        ctx.fireChannelRead(frame);
+
     }
 }
